@@ -1,0 +1,66 @@
+# How to generate your candidate_context.txt
+#
+# This file is injected into every tailoring run so the tool has standing answers
+# to common questions about your background. It prevents the tool from asking you
+# the same clarifying questions on every run, and keeps guardrails accurate.
+#
+# To generate your own candidate_context.txt, paste the prompt below into Claude,
+# ChatGPT, or any capable LLM along with your resume text. Answer the follow-up
+# questions it asks. Then save the output as candidate_context.txt in this folder.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# PROMPT TO GIVE YOUR LLM:
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# I'm setting up a resume tailoring tool that uses an AI to rewrite my resume
+# for each job I apply to. Before it tailors anything, it reads a file called
+# candidate_context.txt that contains standing facts about my background. This
+# prevents the tool from hallucinating skills I don't have, asking me the same
+# clarifying questions every run, and over-inflating my experience.
+#
+# Please help me build my candidate_context.txt by asking me targeted questions
+# about each of the sections below. Ask one section at a time. For each section,
+# generate the corresponding block of text I should save to the file.
+#
+# Sections to cover:
+#
+# 1. Modeling & Methods
+#    - What ML or statistical methods have I actually used in internships or jobs?
+#    - Which methods am I comfortable claiming? Which should be off-limits?
+#
+# 2. Stakeholder Communication & Collaboration
+#    - Who did I present findings to? How technical were they?
+#    - Was my work collaborative or solo? What was my actual role on the team?
+#    - What cross-functional teams did I work with at each role?
+#
+# 3. BI Tools & Automation
+#    - Which BI tools have I actually used (Tableau, Looker, Power BI, etc.)?
+#    - What automation experience do I have -- dashboards, scripts, pipelines?
+#
+# 4. Project-Specific Guardrails (for each major role or project)
+#    - What exactly did I do? What should NOT be inferred or added?
+#    - What framing is accurate? What framing would be an overstatement?
+#
+# 5. Skills I Do NOT Have (important -- prevents hallucination)
+#    - What skills appear on my resume or in job descriptions that I can't honestly claim?
+#
+# 6. Certifications & Cloud
+#    - Do I have any certifications? What cloud platforms have I used and to what depth?
+#
+# 7. Summary Writing Rules
+#    - Paste your current resume summary here so the tool knows how to preserve its tone.
+#
+# 8. Relevant Coursework (if you include coursework on your resume)
+#    - For each course listed, provide a description of what was actually covered.
+#    - The tool uses this to surface relevant topic keywords for each job.
+#
+# After we go through all sections, compile everything into a single
+# candidate_context.txt file formatted with Markdown-style headers and
+# plain bullet points. Keep entries concise and specific -- avoid vague phrases
+# like "strong communicator." Write it so an AI can use it as a factual reference,
+# not a marketing document.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# Once generated, save the output as candidate_context.txt in this folder.
+# The tool will pick it up automatically on the next run.
+# ─────────────────────────────────────────────────────────────────────────────

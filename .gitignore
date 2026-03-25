@@ -1,0 +1,24 @@
+# Environment
+.env
+
+# Personal resume and profile documents
+*.pdf
+*.docx
+
+# Runtime caches
+.answers_cache.txt
+.questions_cache.json
+__pycache__/
+*.pyc
+*.pyo
+
+# Personal context and completed outputs
+candidate_context.txt
+completed/
+
+# Claude Code internal config
+CLAUDE.md
+.claude/
+
+# macOS
+.DS_Store
