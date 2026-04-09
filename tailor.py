@@ -23,6 +23,8 @@ MODEL = "claude-sonnet-4-20250514"
 CANDIDATE_CONTEXT_PATH = "candidate_context.txt"
 QUESTIONS_CACHE_PATH   = ".questions_cache.json"
 
+CLIENT = anthropic.Anthropic()
+
 
 # --------------------------------------------------------------------------- #
 # Text extraction
@@ -188,6 +190,8 @@ PUNCTUATION (hard stop): Never use em dashes (—) anywhere. Use a comma, semico
 Return ONLY a single valid JSON object — no markdown fences, no commentary.\
 """
 
+_QUESTIONS_MARKER = "---QUESTIONS_JSON---"
+
 ANALYSIS_SYSTEM = """\
 You are an expert resume optimizer. You will receive two inputs:
 1. BASE RESUME — the candidate's current version
@@ -219,7 +223,16 @@ company's exact language. Only ask what you genuinely do not know after reading 
 context file. Base each question on a specific gap between the resume's current phrasing
 and the JD's phrasing. Do not invent experience — only ask what you need to better
 describe what the candidate actually did. If the context file already covers a gap,
-do not ask about it.\
+do not ask about it.
+
+After the human-readable output above, emit exactly this separator line followed
+immediately by a JSON array of the clarifying questions (for machine parsing):
+---QUESTIONS_JSON---
+[{"question": "Full question text", "options": ["Option A", "Option B", "Option C"]}, ...]
+
+If there are no clarifying questions, emit:
+---QUESTIONS_JSON---
+[]\
 """
 
 COVER_LETTER_SCHEMA = """
@@ -391,16 +404,30 @@ def _safe_slug(s: str, max_len: int = 40) -> str:
 
 
 def _strip_fences(raw: str) -> str:
-    if raw.startswith("```"):
-        lines = raw.splitlines()
-        start = 1
-        end = len(lines) - 1 if lines[-1].strip() == "```" else len(lines)
-        return "\n".join(lines[start:end])
-    return raw
+    """Extract JSON content, stripping markdown code fences if present."""
+    start = raw.find("{")
+    end = raw.rfind("}")
+    if start != -1 and end > start:
+        return raw[start:end + 1]
+    return raw.strip()
 
 
-def analyze_and_question(resume_text: str, jd_text: str, candidate_context: str = "") -> str:
-    client = anthropic.Anthropic()
+_RESUME_REQUIRED_KEYS = {"name", "company", "contact", "summary", "sections"}
+_CL_REQUIRED_KEYS = {"name", "company", "contact", "salutation", "opening", "bullets", "closing", "sign_off"}
+
+
+def _parse_json(raw: str, required_keys: set | None = None) -> dict:
+    """Parse JSON from Claude response and validate required top-level keys."""
+    data = json.loads(_strip_fences(raw))
+    if required_keys:
+        missing = required_keys - set(data.keys())
+        if missing:
+            raise ValueError(f"Claude response missing required keys: {missing}")
+    return data
+
+
+def analyze_and_question(resume_text: str, jd_text: str, candidate_context: str = "") -> list:
+    """Stream analysis to terminal. Returns parsed list of clarifying question dicts."""
     user_msg = (
         f"BASE RESUME:\n{resume_text}\n\n"
         f"JOB DESCRIPTION:\n{jd_text}"
@@ -410,7 +437,7 @@ def analyze_and_question(resume_text: str, jd_text: str, candidate_context: str 
             f"\n\nCANDIDATE BACKGROUND CONTEXT (standing answers — do not ask questions "
             f"already addressed here; only ask about genuine gaps specific to this JD):\n{candidate_context}"
         )
-    with client.messages.stream(
+    with CLIENT.messages.stream(
         model=MODEL,
         max_tokens=4096,
         system=ANALYSIS_SYSTEM,
@@ -420,28 +447,18 @@ def analyze_and_question(resume_text: str, jd_text: str, candidate_context: str 
             print(text, end="", flush=True)
         response = stream.get_final_message()
     print()
-    return response.content[0].text.strip()
 
-
-def _extract_questions_json(analysis_text: str) -> list:
-    client = anthropic.Anthropic()
-    response = client.messages.create(
-        model=MODEL,
-        max_tokens=1024,
-        system="You extract structured data from text. Return only valid JSON, no markdown fences.",
-        messages=[{"role": "user", "content": (
-            "Extract the clarifying questions from this resume analysis output. "
-            "Return a JSON array where each element has:\n"
-            "- \"question\": the full question text (complete and self-contained)\n"
-            "- \"options\": array of 2-4 short suggested answer options appropriate for this specific question\n\n"
-            f"ANALYSIS TEXT:\n{analysis_text}"
-        )}],
-    )
-    return json.loads(_strip_fences(response.content[0].text.strip()))
+    full_text = response.content[0].text.strip()
+    if _QUESTIONS_MARKER in full_text:
+        json_part = full_text.split(_QUESTIONS_MARKER, 1)[1].strip()
+        try:
+            return json.loads(json_part)
+        except json.JSONDecodeError:
+            print("  Warning: could not parse questions from analysis output.")
+    return []
 
 
 def tailor_resume(resume_text: str, jd_text: str, user_answers: str = "", candidate_context: str = "") -> dict:
-    client = anthropic.Anthropic()
     user_msg = (
         f"Return a JSON object matching this schema:\n{RESUME_SCHEMA}\n\n"
         f"ORIGINAL RESUME:\n{resume_text}\n\n"
@@ -451,19 +468,17 @@ def tailor_resume(resume_text: str, jd_text: str, user_answers: str = "", candid
         user_msg += f"\n\nCANDIDATE BACKGROUND CONTEXT (use to inform bullet reframing; treat as confirmed facts about the candidate):\n{candidate_context}"
     if user_answers:
         user_msg += f"\n\nCANDIDATE ANSWERS TO CLARIFYING QUESTIONS (use these to reframe bullets with the company's exact language):\n{user_answers}"
-    with client.messages.stream(
+    response = CLIENT.messages.create(
         model=MODEL,
         max_tokens=8192,
         system=RESUME_SYSTEM,
         messages=[{"role": "user", "content": user_msg}],
-    ) as stream:
-        response = stream.get_final_message()
-    return json.loads(_strip_fences(response.content[0].text.strip()))
+    )
+    return _parse_json(response.content[0].text.strip(), _RESUME_REQUIRED_KEYS)
 
 
 def tailor_cover_letter(cl_text: str, resume_text: str, jd_text: str,
                         candidate_context: str = "") -> dict:
-    client = anthropic.Anthropic()
     user_msg = (
         f"Return a JSON object matching this schema:\n{COVER_LETTER_SCHEMA}\n\n"
         f"MASTER COVER LETTER (voice and confirmed project content — use as reference, "
@@ -476,20 +491,18 @@ def tailor_cover_letter(cl_text: str, resume_text: str, jd_text: str,
             f"\n\nCANDIDATE BACKGROUND CONTEXT (confirmed facts — same guardrails apply "
             f"as for the resume):\n{candidate_context}"
         )
-    with client.messages.stream(
+    response = CLIENT.messages.create(
         model=MODEL,
         max_tokens=4096,
         system=COVER_LETTER_SYSTEM,
         messages=[{"role": "user", "content": user_msg}],
-    ) as stream:
-        response = stream.get_final_message()
-    return json.loads(_strip_fences(response.content[0].text.strip()))
+    )
+    return _parse_json(response.content[0].text.strip(), _CL_REQUIRED_KEYS)
 
 
 def expand_coursework(data: dict, jd_text: str) -> dict:
     """Ask Claude to add more JD-relevant keywords to coursework bullets."""
-    client = anthropic.Anthropic()
-    response = client.messages.create(
+    response = CLIENT.messages.create(
         model=MODEL,
         max_tokens=4096,
         system=EXPAND_COURSEWORK_SYSTEM,
@@ -498,13 +511,12 @@ def expand_coursework(data: dict, jd_text: str) -> dict:
             f"JOB DESCRIPTION:\n{jd_text}"
         )}],
     )
-    return json.loads(_strip_fences(response.content[0].text.strip()))
+    return _parse_json(response.content[0].text.strip(), _RESUME_REQUIRED_KEYS)
 
 
 def trim_resume_content(data: dict) -> dict:
     """Ask Claude to tighten bullets/summary/skills so the resume fits one page."""
-    client = anthropic.Anthropic()
-    response = client.messages.create(
+    response = CLIENT.messages.create(
         model=MODEL,
         max_tokens=8192,
         system=TRIM_RESUME_SYSTEM,
@@ -512,7 +524,7 @@ def trim_resume_content(data: dict) -> dict:
             f"RESUME JSON TO TRIM:\n{json.dumps(data)}"
         )}],
     )
-    return json.loads(_strip_fences(response.content[0].text.strip()))
+    return _parse_json(response.content[0].text.strip(), _RESUME_REQUIRED_KEYS)
 
 
 # --------------------------------------------------------------------------- #
@@ -544,6 +556,27 @@ _EXPERIENCE_SECTIONS = {"experience", "work experience", "professional experienc
 _EDUCATION_SECTIONS  = {"education", "academic background", "academics"}
 _SKILLS_SECTIONS     = {"skill", "skills", "skills & tools", "skills and tools", "tools"}
 _COURSEWORK_SECTIONS = {"coursework", "relevant coursework", "courses"}
+
+HEADER_LINE_HEIGHT = 14.4   # 12pt section header × 1.2 line spacing
+
+
+def _word_wrap(text: str, font: str, size: float, max_w: float) -> list:
+    """Word-wrap text into lines fitting max_w using ReportLab string widths."""
+    if not text.strip():
+        return [""]
+    words = text.split()
+    lines, line = [], ""
+    for w in words:
+        test = (line + " " + w).strip()
+        if stringWidth(test, font, size) <= max_w:
+            line = test
+        else:
+            if line:
+                lines.append(line)
+            line = w
+    if line:
+        lines.append(line)
+    return lines or [""]
 
 
 # --------------------------------------------------------------------------- #
@@ -645,22 +678,7 @@ class _PdfRenderer:
         return stringWidth(text, font, size)
 
     def _wrap(self, text: str, font: str, size: float, max_w: float) -> list:
-        """Word-wrap text into lines fitting max_w."""
-        if not text.strip():
-            return [""]
-        words = text.split()
-        lines, line = [], ""
-        for w in words:
-            test = (line + " " + w).strip()
-            if self._sw(test, font, size) <= max_w:
-                line = test
-            else:
-                if line:
-                    lines.append(line)
-                line = w
-        if line:
-            lines.append(line)
-        return lines or [""]
+        return _word_wrap(text, font, size, max_w)
 
     # ── drawing primitives ───────────────────────────────────────────────────
 
@@ -749,7 +767,7 @@ class _PdfRenderer:
 
     def _draw_section_header(self, heading: str, before: float, after: float) -> None:
         self._move(before)
-        self._move(14.4)   # baseline: line height for 12pt (1.2×)
+        self._move(HEADER_LINE_HEIGHT)
         self._draw(self.x0, self.y, heading, FONT_BOLD, 12)
         self._section_line(self.y)
         self._move(after)
@@ -782,7 +800,7 @@ class _PdfRenderer:
 
         # Render as inline bold label + regular content (no section header / rule)
         self._move(sp.skills_before)
-        self._move(14.4)  # line height matching section header baseline
+        self._move(sp.bullet_leading)
         label   = "Skills and Tools: "
         label_w = self._sw(label, FONT_BOLD, 11)
         avail_w = self.text_w - label_w
@@ -790,11 +808,8 @@ class _PdfRenderer:
         first_line  = first_lines[0]
         remaining   = " ".join(skills_str.split()[len(first_line.split()):])
         cont_lines  = self._wrap(remaining, FONT_REG, 11, self.text_w) if remaining else []
-        self.c.setFont(FONT_BOLD, 11)
-        self.c.setFillColorRGB(0, 0, 0)
-        self.c.drawString(self.x0, self.y, label)
-        self.c.setFont(FONT_REG, 11)
-        self.c.drawString(self.x0 + label_w, self.y, first_line)
+        self._draw(self.x0, self.y, label, FONT_BOLD, 11)
+        self._draw(self.x0 + label_w, self.y, first_line, FONT_REG, 11)
         for cont in cont_lines:
             self._move(sp.bullet_leading)
             self._draw(self.x0, self.y, cont, FONT_REG, 11)
@@ -816,9 +831,7 @@ class _PdfRenderer:
             self._move(sp.bullet_leading)   # company line
 
             company = subtitle or title
-            self.c.setFont(FONT_BOLD, 11)
-            self.c.setFillColorRGB(0, 0, 0)
-            self.c.drawString(self.x0, self.y, company)
+            self._draw(self.x0, self.y, company, FONT_BOLD, 11)
             if date:
                 self._draw_right(self.x1, self.y, date, FONT_REG, 11)
 
@@ -849,9 +862,7 @@ class _PdfRenderer:
 
             if title:
                 self._move(sp.bullet_leading)
-                self.c.setFont(FONT_REG, 11)
-                self.c.setFillColorRGB(0, 0, 0)
-                self.c.drawString(self.x0, self.y, title)
+                self._draw(self.x0, self.y, title, FONT_REG, 11)
                 if date:
                     self._draw_right(self.x1, self.y, date, FONT_REG, 11)
 
@@ -992,7 +1003,7 @@ def fit_resume_to_one_page(data: dict, jd_text: str, output_path: str) -> None:
                     return
                 else:
                     print("  Expanded version overflows — using original content.")
-            except Exception as e:
+            except (json.JSONDecodeError, ValueError, anthropic.APIError) as e:
                 print(f"  Coursework expansion failed ({e}) — using original content.")
         _render_resume(data, sp, output_path)
         print(f"  Page fit: spacing level {level}, {final_y - MARGIN_RESUME:.1f}pt from bottom.")
@@ -1013,7 +1024,7 @@ def fit_resume_to_one_page(data: dict, jd_text: str, output_path: str) -> None:
                       f"{trim_y - MARGIN_RESUME:.1f}pt from bottom.")
                 return
             final_y = trim_y   # update for next round's overage message
-        except Exception as e:
+        except (json.JSONDecodeError, ValueError, anthropic.APIError) as e:
             print(f"  Content trim round {trim_round} failed ({e}).")
             break
 
@@ -1040,21 +1051,7 @@ def render_cover_letter_pdf(cl_data: dict, output_path: str) -> None:
         return stringWidth(text, font, size)
 
     def wrap(text, font, size, max_w):
-        if not text.strip():
-            return [""]
-        words = text.split()
-        lines, line = [], ""
-        for w in words:
-            test = (line + " " + w).strip()
-            if sw(test, font, size) <= max_w:
-                line = test
-            else:
-                if line:
-                    lines.append(line)
-                line = w
-        if line:
-            lines.append(line)
-        return lines or [""]
+        return _word_wrap(text, font, size, max_w)
 
     name    = cl_data.get("name", "")
     contact = cl_data.get("contact", {})
@@ -1218,8 +1215,9 @@ def main():
         tailored_cl = tailor_cover_letter(
             cl_text, resume_text, jd_text, candidate_context=candidate_context
         )
+        candidate_name = _safe_slug(tailored_cl.get("name", "").replace(" ", "") or "TimChristian")
         company = _safe_slug(tailored_cl.get("company", "Company"))
-        cl_out  = f"TimChristian_{company}_CoverLetter.pdf"
+        cl_out  = f"{candidate_name}_{company}_CoverLetter.pdf"
         render_cover_letter_pdf(tailored_cl, cl_out)
         print(f"Saved → {cl_out}")
         print("\nDone.")
@@ -1234,14 +1232,12 @@ def main():
     else:
         print("\n" + "─" * 60)
         print("Analyzing JD and generating clarifying questions...\n")
-        analysis_text = analyze_and_question(resume_text, jd_text, candidate_context=candidate_context)
+        analysis_questions = analyze_and_question(resume_text, jd_text, candidate_context=candidate_context)
 
         if args.analyze_only:
             print("\n" + "─" * 60)
-            print("Extracting questions...", end="", flush=True)
-            questions = _extract_questions_json(analysis_text)
-            Path(QUESTIONS_CACHE_PATH).write_text(json.dumps(questions, indent=2), encoding="utf-8")
-            print(f" done. {len(questions)} question(s) saved to {QUESTIONS_CACHE_PATH}")
+            Path(QUESTIONS_CACHE_PATH).write_text(json.dumps(analysis_questions, indent=2), encoding="utf-8")
+            print(f"  {len(analysis_questions)} question(s) saved to {QUESTIONS_CACHE_PATH}")
             sys.exit(0)
 
         user_answers = _collect_answers()
@@ -1255,8 +1251,9 @@ def main():
         candidate_context=candidate_context,
     )
 
+    candidate_name = _safe_slug(resume_data.get("name", "").replace(" ", "") or "TimChristian")
     company    = _safe_slug(resume_data.get("company", "Company"))
-    resume_out = f"TimChristian_{company}.pdf"
+    resume_out = f"{candidate_name}_{company}.pdf"
 
     print("Checking page fit...")
     fit_resume_to_one_page(resume_data, jd_text, resume_out)
@@ -1270,7 +1267,7 @@ def main():
         tailored_cl = tailor_cover_letter(
             cl_text, resume_text, jd_text, candidate_context=candidate_context
         )
-        cl_out = f"TimChristian_{company}_CoverLetter.pdf"
+        cl_out = f"{candidate_name}_{company}_CoverLetter.pdf"
         render_cover_letter_pdf(tailored_cl, cl_out)
         print(f"Saved → {cl_out}")
 
