@@ -1,1 +1,214 @@
-PASTE ENTIRE JOB DESCRIPTION HERE
+Position Summary
+
+Are you ready to go beyond your potential and reach something greater? At Deloitte, we believe in more than just growth—we believe in exponential possibilities. Here, your unique talents and ambitions are amplified by the power of our collaborative teams, innovative thinking, and mentorship. When you join Deloitte, you don’t just build a career—you unlock unlimited opportunities, shaping your future and the world around you. Take the power of you and put it to the power of Deloitte. Reach your exponential!
+
+
+
+Recruiting for this role ends on 4/20/2026.
+
+
+
+Work You’ll Do
+
+
+
+As a Data & AI Solutions Engineering Analyst, you won’t just write code or build dashboards—you’ll solve some of the most pressing business and societal challenges of today using data, intelligence, and creativity. We’re looking for individuals who think critically, act boldly, and are ready to take ownership in fast-moving environments.
+
+
+
+You’ll work at the intersection of AI engineering, data infrastructure, and forward deployment, contributing to client solutions that go beyond analysis and into activation, building data-driven solutions with speed, scale, and substance. You won’t stop at insights — you’ll operationalize intelligence through platforms, automation, and integrated deployment. From designing agentic workflows that automate decision-making to building pipelines that fuel generative AI models, you’ll be empowered to think like an entrepreneur and deliver like an engineer.
+
+Build agentic workflows powered by AI that act autonomously with human oversight—helping clients automate, analyze, and adapt.
+Design and deploy generative-AI solutions, such as copilots, assistants, and intelligent content generation tools using large language models (LLMs).
+Serve as a Forward Deployed Engineer: embed with client teams to understand real-world challenges, co-create tailored AI solutions, and ensure production-grade implementation.
+Shape strategy and execution: You’ll do more than model—you’ll help clients transform how they operate with AI embedded in their core workflows.
+Translate business needs into technical architectures using cloud platforms, APIs, ML models, and modern DevOps tooling.
+Key Responsibilities:
+
+Innovation and Critical Thinking
+Apply structured problem-solving and systems thinking to navigate ambiguity and uncover impactful insights.
+Challenge assumptions, propose new solutions, and take initiative in designing scalable AI/analytics systems.
+Generative AI& Applied Intelligence
+Develop and fine-tune generative AI models (e.g., LLMs, diffusion models) for use cases like summarization, reasoning, content generation, and conversational agents.
+Design prompt engineering workflows and retrieval-augmented generation (RAG) pipelines to support real-time decisioning and contextual understanding.
+Implement monitoring, evaluation, and governance frameworks for AI/ML models in production.
+Data Engineering & Infrastructure
+Build and optimize robust data pipelines using tools like SQL, Python, Apache Spark, Airflow, and cloud-native services.
+Design data architectures that support scale, real-time insights, and cross-functional AI workloads.
+Implement ELT/ETL processes that ensure data quality, lineage, and observability.
+Forward Deploy Engineering
+Operate in agentic client environments, embedding directly with client teams to rapidly prototype, iterate, and deploy solutions.
+Translate business challenges into technical specifications and lead solution delivery from concept to production.
+Interface directly with business and engineering stakeholders, driving impact in highly visible engagements.
+Collaboration & Communication
+Communicate complex technical topics clearly to non-technical stakeholders through compelling storytelling and visualization.
+Mentor peers and clients on analytics best practices and AI solution adoption, promoting a data-first culture.
+Contribute to internal IP, toolkits, and accelerators that help scale AI and data capabilities across industries.
+Regardless of project type your work may include:
+Strong understanding of Windows-based systems and proficiency with Microsoft Excel, Word, and PowerPoint, supporting effective data management and presentation
+Proficiency in scripting languages and data visualization platforms, with the ability to extract, transform, merge, and analyze data sets for actionable business insights
+Solid grasp of the data lifecycle, analytics concepts, and the solutions development process, paired with strong problem-solving and critical thinking skills to drive innovation and operational improvements
+Excellent verbal and written communication skills, along with the ability to work independently, manage multiple projects, and collaborate effectively with Deloitte teams and client stakeholders
+Willingness and ability to learn and implement new concepts, frameworks, and emerging technologies, demonstrating a commitment to ongoing personal and professional development
+
+
+What Makes You Stand Out
+
+Agentic AI thinking: You’re not just building models—you’re building AI-powered systems that observe, decide, and act with autonomy and alignment.
+Data engineering fluency: You understand that robust, scalable data pipelines and architectures are critical to building performant AI.
+Entrepreneurial energy: You bring initiative, speed, and creativity—crafting MVPs, iterating fast, and thinking like a product owner.
+Forward deployed presence: You thrive in real-time collaboration with client stakeholders, bringing technical ideas to life in their environment.
+Critical and systems thinking: You see the big picture, reason through tradeoffs, and architect holistic solutions.
+
+
+The Team
+
+
+
+Our Deloitte team plays a major role in directly embedding technology insights into our clients’ organizational goals. At Deloitte, our consultants create sharply-focused solutions within an organization’s operating model, accounting for its people, intellectual capital, technology, and processes. Engagement teams at Deloitte drive value for our clients but also understand the importance of developing resources and contributing to the communities in which we work. We make it our business to take issue to impact, both within and beyond a client setting.
+
+
+
+Required Qualifications
+
+Bachelor’s or Master’s degree (completed by Spring/Summer 2026) in these or related areas of study:
+Computer Science, Data Science, Statistics, Applied Math, Data Analytics, Management Information Systems, Economics, Finance, Business Analytics, Mathematics, Engineering, or a related field, with relevant analytics or data management coursework preferred
+Strong academic track record (minimum cumulative GPA of 3.0)
+Experience or coursework in data processing and analysis tools (e.g., SQL, Python, R, Power BI, Informatica), and familiarity with analytics, data visualization, or big data platforms (e.g., Tableau, Hadoop, Spark, AWS, Azure, Google Cloud)
+Ability to travel up to 50%, on average, based on the work you do and the clients and industries/sectors you serve
+Must be legally authorized to work in the United States without the need for employer sponsorship, now or at any time in the future
+Candidates must be at least 18 years of age at time of employment
+Must live within a commutable distance to your assigned office (g. 100-mile radius) with the ability to commute daily, if required, upon start date
+
+
+Preferred Qualifications
+
+Cumulative GPA of 3.2
+Relevant professional experience, such as internships or part-time roles in analytics, data science, or related fields
+Hands-on experience with LLMs, vector databases, or generative AI APIs (e.g., OpenAI, Claude, Cohere).
+Knowledge of MLOps, CI/CD, and model deployment strategies.
+Internship or project experience in analytics, software engineering, or AI.
+Demonstrated leadership in campus orgs, startups, open-source contributions, or volunteer initiatives.
+Familiarity with a range of analytics, programming, and cloud tools (e.g., SQL, Python, R, Java, Tableau, Power BI, Hadoop, Spark, AWS, Azure, Google Cloud, machine learning frameworks such as TensorFlow or PyTorch)
+The wage range for this role takes into account the wide range of factors that are considered in making compensation decisions including but not limited to skill sets; experience and training; licensure and certifications; and other business and organizational needs. The disclosed range estimate has not been adjusted for the applicable geographic differential associated with the location at which the position may be filled. At Deloitte, it is not typical for an individual to be hired at or near the top of the range for their role and compensation decisions are dependent on the facts and circumstances of each case. A reasonable estimate is $95,000.
+
+
+
+Information for applicants with a need for Accommodation:
+
+
+
+https://www2.deloitte.com/us/en/pages/careers/articles/join-deloitte-assistance-for-disabled-applicants.html   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Deloitte is committed to providing reasonable accommodations for people with disabilities. If you require a reasonable accommodation to participate in the recruiting process, please direct your inquiries to the Global Call Center (GCC) at USTalentCICInbox@deloitte.com.
+Recruiting tips
+
+From developing a stand out resume to putting your best foot forward in the interview, we want you to feel prepared and confident as you explore opportunities at Deloitte. Check out recruiting tips from Deloitte recruiters.
+Benefits
+
+At Deloitte, we know that great people make a great organization. We value our people and offer employees a broad range of benefits. Learn more about what working at Deloitte can mean for you.
+Our people and culture
+
+Our inclusive culture empowers our people to be who they are, contribute their unique perspectives, and make a difference individually and collectively. It enables us to leverage different ways of thinking, ideas, and perspectives, and bring more creativity and innovation to help solve our clients' most complex challenges. This makes Deloitte one of the most rewarding places to work. 
+Our purpose
+
+Deloitte’s purpose is to make an impact that matters for our people, clients, and communities. At Deloitte, purpose is synonymous with how we work every day. It defines who we are. Our purpose comes through in our work with clients that enables impact and value in their organizations, as well as through our own investments, commitments, and actions across areas that help drive positive outcomes for our communities.  Learn more.
+Professional development
+
+From entry-level employees to senior leaders, we believe there’s always room to learn. We offer opportunities to build new skills, take on leadership opportunities and connect and grow through mentorship. From on-the-job learning experiences to formal development programs, our professionals have a variety of opportunities to continue to grow throughout their career.
